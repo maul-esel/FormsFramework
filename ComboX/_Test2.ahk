@@ -6,7 +6,7 @@ CoordMode, mouse, screen
 
 	Gui, +LastFound  +Resize
 	Gui, Font, s6
-	Gui, Add, ListView, x w400 h300 hwndhLV gOnListView, Column 1|Column 2|Column 3
+	Gui, Add, ListView, x10 w400 h300 hwndhLV gOnListView, Column 1|Column 2|Column 3
 	Gui, Add, Edit, hwndhED vvED, input1|input2|input3		;this will become ComboX 
 
 	FillTheList() 
