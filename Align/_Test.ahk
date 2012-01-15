@@ -4,7 +4,7 @@ SetWinDelay, -1
 
 	;===============================
 
-	Gui, +LastFounds +Resize
+	Gui, +LastFound +Resize
 	hGui := WinExist()
 
 	Gui, Show, w500 h600 Hide
