@@ -1080,7 +1080,7 @@ SS_SetFont(HCtrl, Idx, Font) {
 
   */
 SS_SetGlobal(hCtrl, g, cell, colhdr, rowhdr, winhdr) {
-	local p, N, s, params, himgal, htxtal
+	local p, N, s, himgal, htxtal
 	static SPRM_SETGLOBAL=0x489		; wParam=0, lParam=pointer to GLOBAL struct.
 	static LEFT=0x10, CENTER=0x20, RIGHT=0x30, MIDDLE=0x40, BOTTOM=0x80, GLOBAL=0xF0, MASK=0xF0, XMASK=0x30, YMASK=0xC0					;formats
 	static params = "colhdr rowhdr winhdr cell"
