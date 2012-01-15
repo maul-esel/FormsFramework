@@ -188,7 +188,7 @@ EM_FINDTEXTW(hCtrl)  {
 
 
 ;This message returns the index of the last character that fits in the region, plus 1.
-EM_FORMATRANGE(hCtrl, HDC, W, H, X=0, Y=0)  {
+EM_FORMATRANGE(hCtrl, HDC = 0, W = 0, H = 0, X=0, Y=0)  {
 	static EM_FORMATRANGE=1081
 
 	VarSetCapacity(FORMATRANGE, 48, 0)

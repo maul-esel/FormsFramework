@@ -12,7 +12,7 @@
 	Gui, +Resize
 
 	gui, add, edit, HWNDc11 w%w1% h%h1%
-	hSepH := Splitter_Add( "x y w" w1 " h" sep )
+	hSepH := Splitter_Add( "x5 y5 w" w1 " h" sep )
 	h1-=10
 	gui, add, edit, HWNDc12 w%w1% h%h1%, F1 toggle ver splitter off, F2 toggle on
 
