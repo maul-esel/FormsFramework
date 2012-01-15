@@ -1,5 +1,5 @@
 _("m! w e d")
-	Gui, +LastFounds +Resize
+	Gui, +LastFound +Resize
 	hGui := WinExist()
 
 	Gui, Show, w500 h600 Hide
