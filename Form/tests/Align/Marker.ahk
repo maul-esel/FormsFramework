@@ -1,5 +1,5 @@
 _("mo w e d")
-	Gui, +LastFounds
+	Gui, +LastFound
 	hGui := WinExist()
 	hGui := Panel_Add(hGui, 0, 0, 500, 500)
 
