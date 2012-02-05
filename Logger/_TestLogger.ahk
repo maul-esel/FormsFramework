@@ -14,7 +14,7 @@
 	Log_Info("Test Application Started")
 	Log_Auto("Error in application")
 	Log_Auto("Warning in application")
-	LOg_Auto("Some shit", "", "http://www.google.com/search?&q=someshit&btnG=Search")
+	Log_Auto("Some shit", "", "http://www.google.com/search?&q=someshit&btnG=Search")
 	;Log_SetSaveFile("ouput.html")
 return
 
@@ -67,5 +67,5 @@ RandomLen(){
 	return l
 }
 
-#include inc
+#include ..
 #include Logger.ahk
