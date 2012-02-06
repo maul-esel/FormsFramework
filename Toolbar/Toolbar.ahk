@@ -1,6 +1,6 @@
 /* Title:    Toolbar
 			Toolbar control.
-			(see toolbar.png)
+			(see images\toolbar.png)
 			The module is designed with following goals in mind :
 			* To allow programmers to quickly create toolbars in intuitive way.
 			* To allow advanced (non-typical) use, such as dynamic toolbar creation in such way that it doesn't complicate typical toolbar usage.
@@ -82,6 +82,7 @@ Toolbar_Add(hGui, Handler, Style="", ImageList="", Pos="") {
 	static TBSTYLE_EX_DRAWDDARROWS = 0x1, TBSTYLE_EX_HIDECLIPPEDBUTTONS=0x10, TBSTYLE_EX_MIXEDBUTTONS=0x8
 	static TB_BUTTONSTRUCTSIZE=0x41E, TB_SETEXTENDEDSTYLE := 0x454, TB_SETUNICODEFORMAT := 0x2005
 	static TBSTYLE_NODIVIDER=0x40, CCS_NOPARENTALIGN=0x8, CCS_NORESIZE = 0x4, TBSTYLE_BOTTOM = 0x3, TBSTYLE_MENU=0, TBSTYLE_BORDER=0x800000
+	static PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
 
 	if !MODULEID { 
 		old := OnMessage(0x4E, "Toolbar_onNotify"),	MODULEID := 80609
@@ -119,13 +120,13 @@ Toolbar_Add(hGui, Handler, Style="", ImageList="", Pos="") {
     hCtrl := DllCall("CreateWindowEx" 
              , "uint", 0
              , "str",  "ToolbarWindow32" 
-             , "uint", 0 
+             , PtrType, 0
              , "uint", WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | hStyle
              , "uint", x, "uint", y, "uint", w, "uint", h
-             , "uint", hGui 
-             , "uint", MODULEID
-             , "uint", 0 
-             , "uint", 0, "Uint") 
+             , PtrType, hGui
+             , PtrType, MODULEID
+             , PtrType, 0
+             , PtrType, 0, PtrType)
     ifEqual, hCtrl, 0, return 0
 	
 	SendMessage, TB_BUTTONSTRUCTSIZE, 20, 0, , ahk_id %hCtrl%
@@ -154,6 +155,8 @@ Toolbar_Add(hGui, Handler, Style="", ImageList="", Pos="") {
  			change either by setting the button or bitmap size or by adding strings for the first time.
  */
 Toolbar_AutoSize(hCtrl, Align="fit"){
+	static PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
+
 	if align !=
 	{
 		dhw := A_DetectHiddenWindows
@@ -163,7 +166,7 @@ Toolbar_AutoSize(hCtrl, Align="fit"){
 		SysGet, f, 8		;SM_CYFIXEDFRAME , Thickness of the frame around the perimeter of a window that has a caption but is not sizable
 		SysGet, c, 4		;SM_CYCAPTION: Height of a caption area, in pixels.
 		
-		hParent := DllCall("GetParent", "uint", hCtrl)
+		hParent := DllCall("GetParent", PtrType, hCtrl)
 		WinGetPos, ,,pw,ph, ahk_id %hParent%
 		if Align = fit
 			ControlMove,,,,%w%,%h%, ahk_id %hCtrl%
@@ -457,6 +460,7 @@ Toolbar_GetMaxSize(hCtrl, ByRef Width, ByRef Height){
  */
 Toolbar_GetRect(hCtrl, Pos="", pQ="") {
 	static TB_GETITEMRECT=0x41D
+	static PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
 
 	if pPos !=
 		ifLessOrEqual, Pos, 0, return "Err: Invalid button position"
@@ -466,9 +470,9 @@ Toolbar_GetRect(hCtrl, Pos="", pQ="") {
 	IfEqual, ErrorLevel, 0, return A_ThisFunc "> Can't get rect"
 
 	if Pos =
-		DllCall("GetClientRect", "uint", hCtrl, "uint", &RECT)
+		DllCall("GetClientRect", PtrType, hCtrl, PtrType, &RECT)
 
-	x := NumGet(RECT, 0), y := NumGet(RECT, 4), r := NumGet(RECT, 8), b := NumGet(RECT, 12)
+	x := NumGet(RECT, 0, "UInt"), y := NumGet(RECT, 4, "UInt"), r := NumGet(RECT, 8, "UInt"), b := NumGet(RECT, 12, "UInt")
 	return (pQ = "x") ? x : (pQ = "y") ? y : (pQ = "w") ? r-x : (pQ = "h") ? b-y : x " " y " " r-x " " b-y
 }
 
@@ -1040,20 +1044,28 @@ Toolbar_onEndAdjust(hCtrl, cBTN, cnt) {
 
 Toolbar_malloc(pSize){
 	static MEM_COMMIT=0x1000, PAGE_READWRITE=0x04
-	return DllCall("VirtualAlloc", "uint", 0, "uint", pSize, "uint", MEM_COMMIT, "uint", PAGE_READWRITE)
+	static PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
+
+	return DllCall("VirtualAlloc", PtrType, 0, "uint", pSize, "uint", MEM_COMMIT, "uint", PAGE_READWRITE)
 }
 
 Toolbar_mfree(pAdr) {
 	static MEM_RELEASE = 0x8000
-	return DllCall("VirtualFree", "uint", pAdr, "uint", 0, "uint", MEM_RELEASE)
+	static PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
+
+	return DllCall("VirtualFree", PtrType, pAdr, "uint", 0, "uint", MEM_RELEASE)
 }
 
 Toolbar_memmove(dst, src, cnt) {
-	return DllCall("MSVCRT\memmove", "uint", dst, "uint", src, "uint", cnt)
+	static PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
+
+	return DllCall("MSVCRT\memmove", PtrType, dst, PtrType, src, "uint", cnt)
 }
 
 Toolbar_memcpy(dst, src, cnt) {
-	return DllCall("MSVCRT\memcpy", "UInt", dst, "UInt", src, "uint", cnt)
+	static PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
+
+	return DllCall("MSVCRT\memcpy", PtrType, dst, PtrType, src, "uint", cnt)
 }
 
 ;Required function by Forms framework.

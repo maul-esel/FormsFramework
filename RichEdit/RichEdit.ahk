@@ -53,9 +53,10 @@ RichEdit_Add(HParent, X="", Y="", W="", H="", Style="", Text="")  {
 		,ES_LEFT=0, ES_CENTER=1, ES_RIGHT=2, ES_MULTILINE=4, ES_AUTOVSCROLL=0x40, ES_AUTOHSCROLL=0x80, ES_NOHIDESEL=0x100, ES_NUMBER=0x2000, ES_PASSWORD=0x20,ES_READONLY=0x800,ES_WANTRETURN=0x1000  ;, ES_SELECTIONBAR = 0x1000000
 		,ES_HSCROLL=0x100000, ES_VSCROLL=0x200000, ES_SCROLL=0x300000
 		,MODULEID
+	static PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
 
 	if !MODULEID
-		init := DllCall("LoadLibrary", "Str", "Msftedit.dll", (A_PtrSize ? "Ptr" : "UInt")), MODULEID := 091009
+		init := DllCall("LoadLibrary", "Str", "Msftedit.dll", PtrType), MODULEID := 091009
 
 
 	ifEqual, Style,, SetEnv, Style, MULTILINE WANTRETURN VSCROLL
@@ -97,18 +98,18 @@ RichEdit_Add(HParent, X="", Y="", W="", H="", Style="", Text="")  {
      */
 
 	hCtrl := DllCall("CreateWindowEx"
-                  , "Uint", hExStyle								; ExStyle
-                  , "str" , "RICHEDIT50W"							; ClassName
-                  , "str" , Text									; WindowName
-                  , "Uint", WS_CHILD | hStyle						; Edit Style
-                  , "int" , X										; Left
-                  , "int" , Y										; Top
-                  , "int" , W										; Width
-                  , "int" , H										; Height
-                  , (A_PtrSize ? "Ptr" : "UInt"), HParent			; hWndParent
-                  , (A_PtrSize ? "Ptr" : "UInt"), MODULEID			; hMenu
-                  , (A_PtrSize ? "Ptr" : "UInt"), 0					; hInstance
-                  , (A_PtrSize ? "Ptr" : "UInt"), 0, (A_PtrSize ? "Ptr" : "UInt"))			; must return pointer.
+                  , "Uint", hExStyle			; ExStyle
+                  , "str" , "RICHEDIT50W"		; ClassName
+                  , "str" , Text				; WindowName
+                  , "Uint", WS_CHILD | hStyle	; Edit Style
+                  , "int" , X					; Left
+                  , "int" , Y					; Top
+                  , "int" , W					; Width
+                  , "int" , H					; Height
+                  , PtrType, HParent			; hWndParent
+                  , PtrType, MODULEID			; hMenu
+                  , PtrType, 0					; hInstance
+                  , PtrType, 0, PtrType)		; must return pointer.
 	return hCtrl,  selectionbar ? RichEdit_SetOptions( hCtrl, "OR", "SELECTIONBAR" ) : ""
 }
 
@@ -226,12 +227,13 @@ RichEdit_Clear(hEdit) {
  */
 RichEdit_Convert(Input, Direction=0) {
 	static twipsPerInch = 1440, LOGPIXELSX=88, LOGPIXELSY=90, tpi0, tpi1
+	static PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
 
 	if !tpi0
-		dc := DllCall("GetDC", (A_PtrSize ? "Ptr" : "UInt"), 0, (A_PtrSize ? "Ptr" : "UInt"))
-		, tpi0 := DllCall("gdi32.dll\GetDeviceCaps", (A_PtrSize ? "Ptr" : "UInt"), dc, "int", LOGPIXELSX)
-		, tpi1 := DllCall("gdi32.dll\GetDeviceCaps", (A_PtrSize ? "Ptr" : "UInt"), dc, "int", LOGPIXELSY)
-		, DllCall("ReleaseDC", (A_PtrSize ? "Ptr" : "UInt"), 0, (A_PtrSize ? "Ptr" : "UInt"), dc)
+		dc := DllCall("GetDC", PtrType, 0, PtrType)
+		, tpi0 := DllCall("gdi32.dll\GetDeviceCaps", PtrType, dc, "int", LOGPIXELSX)
+		, tpi1 := DllCall("gdi32.dll\GetDeviceCaps", PtrType, dc, "int", LOGPIXELSY)
+		, DllCall("ReleaseDC", PtrType, 0, PtrType, dc)
 
    return (Input>0) ? (Input * tpi%Direction%) // twipsPerInch  : (-Input*twipsPerInch) // tpi%Direction%
 }
@@ -390,11 +392,13 @@ RichEdit_FindWordBreak(hCtrl, CharIndex, Flag="")  {
 	o Strange Microsoft solution for VB (that doesn't work): <http://support.microsoft.com/kb/q143273/>.
  */
 RichEdit_FixKeys(hCtrl) {
-	oldProc := DllCall("GetWindowLong", (A_PtrSize ? "Ptr" : "UInt"), hCtrl, "uint", -4)
+	static PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
+
+	oldProc := DllCall("GetWindowLong", PtrType, hCtrl, "uint", -4)
 	ifEqual, oldProc, 0, return 0
 	wndProc := RegisterCallback("RichEdit_wndProc", "", 4, oldProc)
 	ifEqual, wndProc, , return 0
-	return DllCall("SetWindowLong", (A_PtrSize ? "Ptr" : "UInt"), hCtrl, "Int", -4, (A_PtrSize ? "Ptr" : "UInt"), wndProc, "UInt")
+	return DllCall("SetWindowLong", PtrType, hCtrl, "Int", -4, PtrType, wndProc, "UInt")
 }
 
 /*
