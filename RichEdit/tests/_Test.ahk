@@ -262,6 +262,7 @@ F1:: IfNotEqual, api, API, goto _%api%
 #include ..\..\Splitter\Splitter.ahk
 #include ..\..\Dlg\Dlg.ahk
 #include ..\..\Win\Win.ahk
+#include ..\..\Panel\Panel.ahk
 
 RTF_Table(Rows, Cols, ColWidths, Fun="") {
 	
