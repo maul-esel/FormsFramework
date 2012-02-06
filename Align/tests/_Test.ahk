@@ -12,7 +12,7 @@ SetWinDelay, -1
 	Gui, Add, Edit,		HWNDhEdit, F1 - hide`nF2 - show
 	hSplit := Splitter_Add()
 	Gui, Add, ListView,	HWNDhList, Top control
-	Gui, Add, Text,		h100 0x200 HWNDhText,  Bottom
+	Gui, Add, Text,		h100 0x200 HWNDhText,  Bottom
 	Gui, Add, MonthCal, HWNDhCal	
 
 	sdef = %hEdit% | %hList% %hText% %hCal%			;vertical splitter.

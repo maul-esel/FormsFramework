@@ -55,7 +55,7 @@ RichEdit_Add(HParent, X="", Y="", W="", H="", Style="", Text="")  {
 		,MODULEID
 
 	if !MODULEID
-		init := DllCall("LoadLibrary", "Str", "Msftedit.dll", "Uint"), MODULEID := 091009
+		init := DllCall("LoadLibrary", "Str", "Msftedit.dll", (A_PtrSize ? "Ptr" : "UInt")), MODULEID := 091009
 
 
 	ifEqual, Style,, SetEnv, Style, MULTILINE WANTRETURN VSCROLL
@@ -97,18 +97,18 @@ RichEdit_Add(HParent, X="", Y="", W="", H="", Style="", Text="")  {
      */
 
 	hCtrl := DllCall("CreateWindowEx"
-                  , "Uint", hExStyle			; ExStyle
-                  , "str" , "RICHEDIT50W"		; ClassName
-                  , "str" , Text				; WindowName
-                  , "Uint", WS_CHILD | hStyle	; Edit Style
-                  , "int" , X					; Left
-                  , "int" , Y					; Top
-                  , "int" , W					; Width
-                  , "int" , H					; Height
-                  , "Uint", HParent				; hWndParent
-                  , "Uint", MODULEID			; hMenu
-                  , "Uint", 0					; hInstance
-                  , "Uint", 0, "Uint")			; must return uint.
+                  , "Uint", hExStyle								; ExStyle
+                  , "str" , "RICHEDIT50W"							; ClassName
+                  , "str" , Text									; WindowName
+                  , "Uint", WS_CHILD | hStyle						; Edit Style
+                  , "int" , X										; Left
+                  , "int" , Y										; Top
+                  , "int" , W										; Width
+                  , "int" , H										; Height
+                  , (A_PtrSize ? "Ptr" : "UInt"), HParent			; hWndParent
+                  , (A_PtrSize ? "Ptr" : "UInt"), MODULEID			; hMenu
+                  , (A_PtrSize ? "Ptr" : "UInt"), 0					; hInstance
+                  , (A_PtrSize ? "Ptr" : "UInt"), 0, (A_PtrSize ? "Ptr" : "UInt"))			; must return pointer.
 	return hCtrl,  selectionbar ? RichEdit_SetOptions( hCtrl, "OR", "SELECTIONBAR" ) : ""
 }
 
@@ -228,10 +228,10 @@ RichEdit_Convert(Input, Direction=0) {
 	static twipsPerInch = 1440, LOGPIXELSX=88, LOGPIXELSY=90, tpi0, tpi1
 
 	if !tpi0
-		dc := DllCall("GetDC", "uint", 0, "Uint")
-		, tpi0 := DllCall("gdi32.dll\GetDeviceCaps", "uint", dc, "int", LOGPIXELSX)
-		, tpi1 := DllCall("gdi32.dll\GetDeviceCaps", "uint", dc, "int", LOGPIXELSY)
-		, DllCall("ReleaseDC", "uint", 0, "uint", dc)
+		dc := DllCall("GetDC", (A_PtrSize ? "Ptr" : "UInt"), 0, (A_PtrSize ? "Ptr" : "UInt"))
+		, tpi0 := DllCall("gdi32.dll\GetDeviceCaps", (A_PtrSize ? "Ptr" : "UInt"), dc, "int", LOGPIXELSX)
+		, tpi1 := DllCall("gdi32.dll\GetDeviceCaps", (A_PtrSize ? "Ptr" : "UInt"), dc, "int", LOGPIXELSY)
+		, DllCall("ReleaseDC", (A_PtrSize ? "Ptr" : "UInt"), 0, (A_PtrSize ? "Ptr" : "UInt"), dc)
 
    return (Input>0) ? (Input * tpi%Direction%) // twipsPerInch  : (-Input*twipsPerInch) // tpi%Direction%
 }
@@ -390,11 +390,11 @@ RichEdit_FindWordBreak(hCtrl, CharIndex, Flag="")  {
 	o Strange Microsoft solution for VB (that doesn't work): <http://support.microsoft.com/kb/q143273/>.
  */
 RichEdit_FixKeys(hCtrl) {
-	oldProc := DllCall("GetWindowLong", "uint", hCtrl, "uint", -4)
+	oldProc := DllCall("GetWindowLong", (A_PtrSize ? "Ptr" : "UInt"), hCtrl, "uint", -4)
 	ifEqual, oldProc, 0, return 0
 	wndProc := RegisterCallback("RichEdit_wndProc", "", 4, oldProc)
 	ifEqual, wndProc, , return 0
-	return DllCall("SetWindowLong", "UInt", hCtrl, "Int", -4, "Int", wndProc, "UInt")
+	return DllCall("SetWindowLong", (A_PtrSize ? "Ptr" : "UInt"), hCtrl, "Int", -4, (A_PtrSize ? "Ptr" : "UInt"), wndProc, "UInt")
 }
 
 /*
