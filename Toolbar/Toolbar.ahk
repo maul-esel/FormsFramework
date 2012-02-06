@@ -82,7 +82,7 @@ Toolbar_Add(hGui, Handler, Style="", ImageList="", Pos="") {
 	static TBSTYLE_EX_DRAWDDARROWS = 0x1, TBSTYLE_EX_HIDECLIPPEDBUTTONS=0x10, TBSTYLE_EX_MIXEDBUTTONS=0x8
 	static TB_BUTTONSTRUCTSIZE=0x41E, TB_SETEXTENDEDSTYLE := 0x454, TB_SETUNICODEFORMAT := 0x2005
 	static TBSTYLE_NODIVIDER=0x40, CCS_NOPARENTALIGN=0x8, CCS_NORESIZE = 0x4, TBSTYLE_BOTTOM = 0x3, TBSTYLE_MENU=0, TBSTYLE_BORDER=0x800000
-	static PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
+	PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
 
 	if !MODULEID { 
 		old := OnMessage(0x4E, "Toolbar_onNotify"),	MODULEID := 80609
@@ -155,7 +155,7 @@ Toolbar_Add(hGui, Handler, Style="", ImageList="", Pos="") {
  			change either by setting the button or bitmap size or by adding strings for the first time.
  */
 Toolbar_AutoSize(hCtrl, Align="fit"){
-	static PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
+	PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
 
 	if align !=
 	{
@@ -460,7 +460,7 @@ Toolbar_GetMaxSize(hCtrl, ByRef Width, ByRef Height){
  */
 Toolbar_GetRect(hCtrl, Pos="", pQ="") {
 	static TB_GETITEMRECT=0x41D
-	static PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
+	PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
 
 	if pPos !=
 		ifLessOrEqual, Pos, 0, return "Err: Invalid button position"
@@ -787,8 +787,8 @@ Toolbar_compileButtons(hCtrl, Btns, ByRef cBTN) {
 	static TBSTATE_CHECKED=1, TBSTATE_ENABLED=4, TBSTATE_HIDDEN=8, TBSTATE_DISABLED=0, TBSTATE_WRAP = 0x20
 	static TB_ADDSTRING = 0x41C, WS_CLIPSIBLINGS = 0x4000000
 	static id=10000								; automatic IDing starts form 10000,     1 <= userID < 10 000
-	static btn_struct_size := 8 + 3 * A_PtrSize ; define structure size compatible to x64
-	PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
+	btn_struct_size := 8 + 3 * A_PtrSize ; define structure size compatible to x64
+	, PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
 
 	; retrieve control style:
 	WinGet, bMenu, Style, ahk_id %hCtrl%
@@ -1049,8 +1049,7 @@ allocates the specified number of bytes
 */
 Toolbar_malloc(pSize){
 	static MEM_COMMIT=0x1000, PAGE_READWRITE=0x04
-	static PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
-
+	PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
 	return DllCall("VirtualAlloc", PtrType, 0, "uint", pSize, "uint", MEM_COMMIT, "uint", PAGE_READWRITE)
 }
 
@@ -1059,8 +1058,7 @@ frees memory allocated with Toolbar_malloc()
 */
 Toolbar_mfree(pAdr) {
 	static MEM_RELEASE = 0x8000
-	static PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
-
+	PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
 	return DllCall("VirtualFree", PtrType, pAdr, "uint", 0, "uint", MEM_RELEASE)
 }
 
@@ -1071,8 +1069,7 @@ src - the source pointer
 cnt - the number of bytes
 */
 Toolbar_memmove(dst, src, cnt) {
-	static PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
-
+	PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
 	return DllCall("MSVCRT\memmove", PtrType, dst, PtrType, src, "uint", cnt)
 }
 
@@ -1083,8 +1080,7 @@ src - the source pointer
 cnt - the number of bytes
 */
 Toolbar_memcpy(dst, src, cnt) {
-	static PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
-
+	PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
 	return DllCall("MSVCRT\memcpy", PtrType, dst, PtrType, src, "uint", cnt)
 }
 

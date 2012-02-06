@@ -53,7 +53,7 @@ RichEdit_Add(HParent, X="", Y="", W="", H="", Style="", Text="")  {
 		,ES_LEFT=0, ES_CENTER=1, ES_RIGHT=2, ES_MULTILINE=4, ES_AUTOVSCROLL=0x40, ES_AUTOHSCROLL=0x80, ES_NOHIDESEL=0x100, ES_NUMBER=0x2000, ES_PASSWORD=0x20,ES_READONLY=0x800,ES_WANTRETURN=0x1000  ;, ES_SELECTIONBAR = 0x1000000
 		,ES_HSCROLL=0x100000, ES_VSCROLL=0x200000, ES_SCROLL=0x300000
 		,MODULEID
-	static PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
+	PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
 
 	if !MODULEID
 		init := DllCall("LoadLibrary", "Str", "Msftedit.dll", PtrType), MODULEID := 091009
@@ -227,7 +227,7 @@ RichEdit_Clear(hEdit) {
  */
 RichEdit_Convert(Input, Direction=0) {
 	static twipsPerInch = 1440, LOGPIXELSX=88, LOGPIXELSY=90, tpi0, tpi1
-	static PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
+	PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
 
 	if !tpi0
 		dc := DllCall("GetDC", PtrType, 0, PtrType)
@@ -392,7 +392,7 @@ RichEdit_FindWordBreak(hCtrl, CharIndex, Flag="")  {
 	o Strange Microsoft solution for VB (that doesn't work): <http://support.microsoft.com/kb/q143273/>.
  */
 RichEdit_FixKeys(hCtrl) {
-	static PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
+	PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
 
 	oldProc := DllCall("GetWindowLong", PtrType, hCtrl, "uint", -4)
 	ifEqual, oldProc, 0, return 0
