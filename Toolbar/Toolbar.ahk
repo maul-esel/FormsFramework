@@ -527,13 +527,13 @@ Toolbar_GetRect(hCtrl, Pos="", pQ="") {
  	    (i.e. their captions are seen as tooltips and are not displayed.
  */
 Toolbar_Insert(hCtrl, Btns, Pos=""){
-	static TB_INSERTA = 0x414, TB_INSERTBUTTONA=0x415
+	static TB_INSERT = 0x414, TB_INSERTBUTTON = 0x415
 
 	cnt := Toolbar_compileButtons(hCtrl, Btns, cBTN)
 	if Pos =
-		SendMessage, TB_INSERTA, cnt, cBTN ,, ahk_id %hCtrl%
+		SendMessage, TB_INSERT, cnt, cBTN ,, ahk_id %hCtrl%
 	else loop, %cnt%
-		SendMessage, TB_INSERTBUTTONA, Pos+A_Index-2, cBTN + 20*(A_Index-1) ,, ahk_id %hCtrl%
+		SendMessage, TB_INSERTBUTTON, Pos+A_Index-2, cBTN + 20*(A_Index-1) ,, ahk_id %hCtrl%
 
 	Toolbar_mfree(cBTN)
 
@@ -786,20 +786,24 @@ Toolbar_compileButtons(hCtrl, Btns, ByRef cBTN) {
 	static BTNS_SEP=1, BTNS_CHECK =2, BTNS_CHECKGROUP = 6, BTNS_DROPDOWN = 8, BTNS_A=16, BTNS_AUTOSIZE = 16, BTNS_NOPREFIX = 32, BTNS_SHOWTEXT = 64
 	static TBSTATE_CHECKED=1, TBSTATE_ENABLED=4, TBSTATE_HIDDEN=8, TBSTATE_DISABLED=0, TBSTATE_WRAP = 0x20
 	static TB_ADDSTRING = 0x41C, WS_CLIPSIBLINGS = 0x4000000
-	static id=10000								;automatic IDing starts form 10000,     1 <= userID < 10 000
+	static id=10000								; automatic IDing starts form 10000,     1 <= userID < 10 000
+	static btn_struct_size := 8 + 3 * A_PtrSize ; define structure size compatible to x64
+	PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
 
+	; retrieve control style:
 	WinGet, bMenu, Style, ahk_id %hCtrl%
-	bMenu := bMenu & WS_CLIPSIBLINGS		
+	bMenu := bMenu & WS_CLIPSIBLINGS
 
-	aBTN := Toolbar(hCtrl "aBTN")
+	aBTN := Toolbar(hCtrl "aBTN") ; get button array pointer (if toolbar already has buttons)
 	if (aBTN = "")
-		aBTN := Toolbar_malloc( 50 * 20 + 4),  Toolbar(hCtrl "aBTN", aBTN)	 ;if space for array of * buttons isn't reserved and there are definitions of * buttons reserve it for 50 buttons + some more so i can keep some data there...
+		aBTN := Toolbar_malloc( 50 * btn_struct_size + 4) ;if space for array of * buttons isn't reserved and there are definitions of * buttons reserve it for 50 buttons + some more so i can keep some data there...
+		,  Toolbar(hCtrl "aBTN", aBTN) ; store button array pointer
 
-	StringReplace, _, Btns, `n, , UseErrorLevel
-	btnNo := ErrorLevel + 1
-	cBTN := Toolbar_malloc( btnNo * 20 )
+	StringReplace, _, Btns, `n, , UseErrorLevel ; retrieve the number of lines in the button definition (== number of buttons)
+	btnNo := ErrorLevel + 1 ; increase button number by one (why?)
+	cBTN := Toolbar_malloc( btnNo * btn_struct_size ) ; allocate space for structures
 
-	a := cnt := 0, 	cnta := NumGet(aBTN+0)		;get number of buttons in the array
+	a := cnt := 0, 	cnta := NumGet(aBTN+0)		;get number of buttons in the array (if toolbar already filled)
 	loop, parse, Btns, `n, %A_Space%%A_Tab%	
 	{
 		ifEqual, A_LoopField, ,continue			;skip emtpy lines
@@ -812,7 +816,7 @@ Toolbar_compileButtons(hCtrl, Btns, ByRef cBTN) {
 			a2 := -1		;so to become I_IMAGENONE = -2
 
 	 ;check for available button
-		a := SubStr(a1,1,1) = "*"
+		a := SubStr(a1,1,1) = "*" ; WHAT is this?
 		if a
 			a1 := SubStr(a1,2), o := aBTN + 4
 		else o := cBTN
@@ -821,34 +825,33 @@ Toolbar_compileButtons(hCtrl, Btns, ByRef cBTN) {
 		hState := InStr(a3, "disabled") ? 0 : TBSTATE_ENABLED
 		loop, parse, a3, %A_Tab%%A_Space%, %A_Tab%%A_Space%
 		{
-			ifEqual, A_LoopField,,continue
-			hState |= TBSTATE_%A_LOOPFIELD%
+			ifEqual, A_LoopField,,continue ; skip empty states
+			hState |= TBSTATE_%A_LOOPFIELD% ; add state (from static vars)
 		}
 		ifEqual, hState, , return A_ThisFunc "> Some of the states are invalid: " a3
 
 	 ;parse styles
-
 		hStyle := bMenu ? BTNS_SHOWTEXT | BTNS_DROPDOWN : 0
-		hstyle |= (A_LoopField >= "-") and (A_LoopField <= "-------------------") ? BTNS_SEP : 0
-		sep += (hStyle = BTNS_SEP) ? 1 : 0
+		hstyle |= (A_LoopField >= "-") and (A_LoopField <= "-------------------") ? BTNS_SEP : 0 ; check if button is a separator, if so, add appropriate style
+		sep += (hStyle = BTNS_SEP) ? 1 : 0 ; increase count of separators (needed for icon calculation)
 		loop, parse, a4, %A_Tab%%A_Space%, %A_Tab%%A_Space%
 		{
-			ifEqual, A_LoopField,,continue
-			hstyle |= BTNS_%A_LOOPFIELD%
+			ifEqual, A_LoopField,,continue ; skip empty styles
+			hstyle |= BTNS_%A_LOOPFIELD% ; add style (from static vars)
 		}
 		ifEqual, hStyle, , return A_ThisFunc "> Some of the styles are invalid: " a4
 
 	 ;calculate icon
 		if a2 is not Integer					;if user didn't specify icon, use button number as icon index (don't count separators)
 			a2 := cnt+cnta+1-sep
-		o += 20 * (a ? cnta : cnt)				;calculate offset o of this structure in array of TBBUTON structures.
+		o += btn_struct_size * (a ? cnta : cnt)				;calculate offset o of this structure in array of TBBUTTON structures.
 												; only A buttons (* marked) are remembered, current buttons will temporary use
 	 ;add caption to the string pool
 		if (hStyle != BTNS_SEP) {
 			StringReplace a1, a1, `r, `n, A		;replace `r with new lines (for multiline tooltips)
-			VarSetCapacity(buf, StrLen(a1)+1, 0), buf := a1	 ;Buf must be double-NULL-terminated
-			sIdx := DllCall("SendMessage","uint",hCtrl,"uint", TB_ADDSTRING, "uint",0,"uint",&buf)  ;returns the new index of the string within the string pool
-		} else sIdx := -1,  a2 := (StrLen(A_LoopField)-1)*10 + 1			;if separator, lentgth of the "-" string determines width of the separation. Each - adds 10 pixels.
+			VarSetCapacity(buf, (StrLen(a1)+1) * A_IsUnicode ? 2 : 1, 0), Toolbar_memcpy(&buf, &a1, StrLen(a1) * A_IsUnicode ? 2 : 1)	 ;Buf must be double-NULL-terminated
+			sIdx := DllCall("SendMessage",PtrType,hCtrl,"uint", TB_ADDSTRING, "uint",0,PtrType,&buf)  ;returns the new index of the string within the string pool
+		} else sIdx := -1,  a2 := (StrLen(A_LoopField)-1)*10 + 1			;if separator, length of the "-" string determines width of the separation. Each - adds 10 pixels.
 
 	 ;TBBUTTON Structure
 		bid := a5 ? a5 : ++id 					;user id or auto id makes button id
@@ -857,8 +860,8 @@ Toolbar_compileButtons(hCtrl, Btns, ByRef cBTN) {
 		NumPut(bid,		o+0, 4, "Int")			;Command identifier associated with the button
 		NumPut(hstate,  o+0, 8, "Char")			;Button state flags
 		NumPut(hStyle,  o+0, 9, "Char")			;Button style
-		NumPut(0,		o+0, 12)				;User data
-		NumPut(sIdx,	o+0, 16, "Int")			;Zero-based index of the button string
+		NumPut(0,		o+0, 8 + 1 * A_PtrSize, "Ptr")	;User data
+		NumPut(sIdx,	o+0, 8 + 2 * A_PtrSize, "Int")	;Zero-based index of the button string
 
 		if a
 		{
@@ -869,11 +872,11 @@ Toolbar_compileButtons(hCtrl, Btns, ByRef cBTN) {
 		else cnt++
 	}
 
-	NumPut(cnta, aBTN + 0)		
+	NumPut(cnta, aBTN + 0)
 	if warning
 		msgbox You exceeded the limit of available (*) buttons (50)
 
-	return cnt									;return number of buttons in the array
+	return cnt ;return number of buttons in the array
 }
 
 Toolbar_onNotify(Wparam,Lparam,Msg,Hwnd) { 
@@ -1041,7 +1044,9 @@ Toolbar_onEndAdjust(hCtrl, cBTN, cnt) {
 	Toolbar( hCtrl "aBTN", buf)
 }
 
-
+/*
+allocates the specified number of bytes
+*/
 Toolbar_malloc(pSize){
 	static MEM_COMMIT=0x1000, PAGE_READWRITE=0x04
 	static PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
@@ -1049,6 +1054,9 @@ Toolbar_malloc(pSize){
 	return DllCall("VirtualAlloc", PtrType, 0, "uint", pSize, "uint", MEM_COMMIT, "uint", PAGE_READWRITE)
 }
 
+/*
+frees memory allocated with Toolbar_malloc()
+*/
 Toolbar_mfree(pAdr) {
 	static MEM_RELEASE = 0x8000
 	static PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
@@ -1056,12 +1064,24 @@ Toolbar_mfree(pAdr) {
 	return DllCall("VirtualFree", PtrType, pAdr, "uint", 0, "uint", MEM_RELEASE)
 }
 
+/*
+moves memory:
+dst - the destination pointer
+src - the source pointer
+cnt - the number of bytes
+*/
 Toolbar_memmove(dst, src, cnt) {
 	static PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
 
 	return DllCall("MSVCRT\memmove", PtrType, dst, PtrType, src, "uint", cnt)
 }
 
+/*
+copies memory:
+dst  - the destination pointer
+src - the source pointer
+cnt - the number of bytes
+*/
 Toolbar_memcpy(dst, src, cnt) {
 	static PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
 
