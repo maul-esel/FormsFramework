@@ -54,4 +54,8 @@ OnFindReplace(Event, Flags, FindText, ReplaceText){
 	Set(s)
 }
 
+GuiClose:
+ExitApp
+return
+
 #include ..\Dlg.ahk
