@@ -855,8 +855,8 @@ Toolbar_compileButtons(hCtrl, Btns, ByRef cBTN) {
 	 ;add caption to the string pool
 		if (hStyle != BTNS_SEP) {
 			StringReplace a1, a1, `r, `n, A		;replace `r with new lines (for multiline tooltips)
-			VarSetCapacity(buf, (StrLen(a1)+1) * A_IsUnicode ? 2 : 1, 0)
-			A_IsUnicode ? %StringConverter%(a1, &buf, StrLen(a1), "UTF-16") : Toolbar_memcpy(&buf, &a1, StrLen(a1) * A_IsUnicode ? 2 : 1)	 ;Buf must be double-NULL-terminated
+			VarSetCapacity(buf, (StrLen(a1)+1) * (A_IsUnicode ? 2 : 1), 0)
+			A_IsUnicode ? %StringConverter%(a1, &buf, StrLen(a1) * 2, "UTF-16") : Toolbar_memcpy(&buf, &a1, StrLen(a1))	 ;Buf must be double-NULL-terminated
 			sIdx := DllCall("SendMessage",PtrType,hCtrl,"uint", A_IsUnicode ? TB_ADDSTRINGW : TB_ADDSTRINGA, "uint",0,PtrType,&buf)  ;returns the new index of the string within the string pool
 		} else sIdx := -1,  a2 := (StrLen(A_LoopField)-1)*10 + 1			;if separator, length of the "-" string determines width of the separation. Each - adds 10 pixels.
 
