@@ -791,7 +791,7 @@ Button definition:
 Toolbar_compileButtons(hCtrl, Btns, ByRef cBTN) {
 	static BTNS_SEP := 1, BTNS_CHECK := 2, BTNS_CHECKGROUP := 6, BTNS_DROPDOWN := 8, BTNS_A := 16, BTNS_AUTOSIZE := 16, BTNS_NOPREFIX := 32, BTNS_SHOWTEXT := 64
 	static TBSTATE_CHECKED := 1, TBSTATE_ENABLED := 4, TBSTATE_HIDDEN := 8, TBSTATE_DISABLED := 0, TBSTATE_WRAP := 0x20
-	static TB_ADDSTRINGA := 0x41C, TB_ADDSTRINGW := 0x44D, WS_CLIPSIBLINGS := 0x4000000, StringConverter := "StrPut"
+	static TB_ADDSTRINGA := 0x41C, TB_ADDSTRINGW := 0x44D, WS_CLIPSIBLINGS := 0x4000000
 	static id := 10000								; automatic IDing starts form 10000,     1 <= userID < 10 000
 	PtrSize := A_PtrSize ? A_PtrSize : 4 ; ensure compatibility to AHK classic
 	, btn_struct_size := 8 + 3 * PtrSize ; define structure size compatible to x64
@@ -857,7 +857,7 @@ Toolbar_compileButtons(hCtrl, Btns, ByRef cBTN) {
 		if (hStyle != BTNS_SEP) {
 			StringReplace a1, a1, `r, `n, A		;replace `r with new lines (for multiline tooltips)
 			VarSetCapacity(buf, (StrLen(a1)+1) * (A_IsUnicode ? 2 : 1), 0)
-			A_IsUnicode ? %StringConverter%(a1, &buf, StrLen(a1) * 2, "UTF-16") : Toolbar_memcpy(&buf, &a1, StrLen(a1))	 ;Buf must be double-NULL-terminated
+			A_IsUnicode ? StrPut(a1, &buf, StrLen(a1) * 2, "UTF-16") : Toolbar_memcpy(&buf, &a1, StrLen(a1))	 ;Buf must be double-NULL-terminated
 			sIdx := DllCall("SendMessage",PtrType,hCtrl,"uint", A_IsUnicode ? TB_ADDSTRINGW : TB_ADDSTRINGA, "uint",0,PtrType,&buf)  ;returns the new index of the string within the string pool
 		} else sIdx := -1,  a2 := (StrLen(A_LoopField)-1)*10 + 1			;if separator, length of the "-" string determines width of the separation. Each - adds 10 pixels.
 
