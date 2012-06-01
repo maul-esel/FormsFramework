@@ -793,7 +793,8 @@ Toolbar_compileButtons(hCtrl, Btns, ByRef cBTN) {
 	static TBSTATE_CHECKED := 1, TBSTATE_ENABLED := 4, TBSTATE_HIDDEN := 8, TBSTATE_DISABLED := 0, TBSTATE_WRAP := 0x20
 	static TB_ADDSTRINGA := 0x41C, TB_ADDSTRINGW := 0x44D, WS_CLIPSIBLINGS := 0x4000000, StringConverter := "StrPut"
 	static id := 10000								; automatic IDing starts form 10000,     1 <= userID < 10 000
-	btn_struct_size := 8 + 3 * A_PtrSize ; define structure size compatible to x64
+	PtrSize := A_PtrSize ? A_PtrSize : 4 ; ensure compatibility to AHK classic
+	, btn_struct_size := 8 + 3 * PtrSize ; define structure size compatible to x64
 	, PtrType := A_PtrSize ? "Ptr" : "UInt" ; use x64-compatible type if running AHK_L
 
 	; retrieve control style:
@@ -867,8 +868,8 @@ Toolbar_compileButtons(hCtrl, Btns, ByRef cBTN) {
 		NumPut(bid,		o+0, 4, "Int")			;Command identifier associated with the button
 		NumPut(hstate,  o+0, 8, "Char")			;Button state flags
 		NumPut(hStyle,  o+0, 9, "Char")			;Button style
-		NumPut(0,		o+0, 8 + 1 * A_PtrSize, "Ptr")	;User data
-		NumPut(sIdx,	o+0, 8 + 2 * A_PtrSize, "Int")	;Zero-based index of the button string
+		NumPut(0,		o+0, 8 + 1 * PtrSize, "Ptr")	;User data
+		NumPut(sIdx,	o+0, 8 + 2 * PtrSize, "Int")	;Zero-based index of the button string
 
 		if a
 		{
