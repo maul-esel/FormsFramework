@@ -24,7 +24,7 @@ CoordMode, Mouse, screen
 	Menu, Features, Check, AutoIndent
 
 
-	HE_SetKeywordFile( A_ScriptDir "\Keywords.hes")
+	HE_SetKeywordFile( A_ScriptDir "\..\Keywords.hes")
 	HE_OpenFile( hEdit, A_ScriptFullPath )
 
 	Attach(hEdit, "w h")
