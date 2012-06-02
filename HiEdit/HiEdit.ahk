@@ -628,7 +628,16 @@ HE_NewFile(hEdit){
  */
 HE_OpenFile(hEdit, pFileName, flag=0){
 	static HEM_OPENFILE	:= 2025		;wParam=0,				lParam=lpszFileName	 Returns TRUE if successful/FALSE otherwise
-	SendMessage, HEM_OPENFILE, flag, &pFileName,, ahk_id %hEdit%
+
+	addr := &pFileName
+	if (A_IsUnicode) ; convert to ANSI
+	{
+		VarSetCapacity(buf, StrLen(pFileName), 0)
+		, StrPut(pFileName, &buf, StrLen(pFileName), "CP0")
+		, addr := &buf
+	}
+
+	SendMessage, HEM_OPENFILE, flag, addr,, ahk_id %hEdit%
 	return errorlevel
 }
 
@@ -717,8 +726,16 @@ HE_ReplaceSel(hEdit, text=""){
  */	
 HE_SaveFile(hEdit, pFileName, idx=-1){
 	static HEM_SAVEFILE	:= 2028		;wParam=lpszFileName,					lParam = -1 for current file or dwFileIndex	:Returns 
-	
-	SendMessage, HEM_SAVEFILE, &pFileName, idx,, ahk_id %hEdit%
+
+	addr := &pFileName
+	if (A_IsUnicode) ; convert to ANSI
+	{
+		VarSetCapacity(buf, StrLen(pFileName), 0)
+		, StrPut(pFileName, &buf, StrLen(pFileName), "CP0")
+		, addr := &buf
+	}
+
+	SendMessage, HEM_SAVEFILE, addr, idx,, ahk_id %hEdit%
 	return Errorlevel
 }
 
@@ -969,7 +986,7 @@ HE_SetFont(hEdit, pFont="") {
 			pFile	- Path to .hes file
  */
 HE_SetKeywordFile( pFile ){
-	return DllCall("HiEdit.dll\SetKeywordFile", "str", pFile)
+	return DllCall("HiEdit.dll\SetKeywordFile", A_IsUnicode ? "astr" : "str", pFile)
 }
 
 /*
@@ -1141,7 +1158,7 @@ HE(var="", value="~`a", ByRef o1="", ByRef o2="", ByRef o3="", ByRef o4="", ByRe
 ;Required function by Forms framework.
 HiEdit_add2Form(hParent, Txt, Opt) {
 	static f := "Form_Parse"
-	
+
 	%f%(Opt, "x# y# w# h# style dllPath g*", x, y, w, h, style, dllPath)
 	h := HE_Add(hParent, x, y, w, h, style, dllPath)
 	ifNotEqual, Txt,, ControlSetText,, %Txt%, ahk_id %h%
