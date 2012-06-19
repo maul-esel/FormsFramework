@@ -51,9 +51,9 @@ Splitter_Add(Opt="", Text="", Handler="") {
 	loop, parse, Opt, %A_Space%
 		if A_LoopField in blackframe,blackrect,grayframe,grayrect,sunken,whiteframe,whiterect,sunken,center
 			hStyle |= SS_%A_LoopField%
-		else Opt .= A_LoopField " "
+		else Opt_New .= A_LoopField " "
 
-	Gui, Add, Text, HWNDhSep -hscroll -vscroll %SS_CENTERIMAGE% %SS_NOTIFY% center %Opt% %hStyle%, %Text%	
+	Gui, Add, Text, HWNDhSep -hscroll -vscroll %SS_CENTERIMAGE% %SS_NOTIFY% center %Opt_New% %hStyle%, %Text%	
 	hSep+=0
 	if IsFunc(Handler)
 		Splitter(hSep "Handler", Handler)
